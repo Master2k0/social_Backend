@@ -1,4 +1,4 @@
-import { Prop, Schema } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 import { Document } from 'mongoose';
 
@@ -8,10 +8,10 @@ import { ERoleGroup } from '@/types/enums/ERoleGroup';
 export type GroupDocument = Group & Document;
 
 export class GroupMember {
-  @Prop()
+  @Prop({ type: String, enum: ERoleGroup, required: true })
   role: ERoleGroup;
   @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' })
-  userId: User;
+  user: User;
 }
 
 @Schema({
@@ -21,10 +21,8 @@ export class GroupMember {
 export class Group {
   _id: string;
 
-  // @Prop({ type: String, required: true })
   createBy: string;
 
-  // @Prop
   updateBy?: string;
 
   @Prop({ type: String, required: true })
@@ -45,6 +43,14 @@ export class Group {
   @Prop({ type: String })
   avatar?: string;
 
-  @Prop({ type: [GroupMember] })
+  @Prop([GroupMember])
   members: GroupMember[];
+  // | {
+  //     role: ERoleGroup;
+  //     user: mongoose.Schema.Types.ObjectId;
+  //   };
+
+  toDto: (dto: any) => any;
 }
+
+export const GroupSchema = SchemaFactory.createForClass(Group);

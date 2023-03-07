@@ -74,7 +74,6 @@ export class AuthService {
 
   private async updateRefreshToken(userId: string, refreshToken: string) {
     const hashedRefreshToken = await this.hashToken(refreshToken);
-    console.log(userId);
     await this.userService.update(userId, {
       refreshToken: hashedRefreshToken,
     });
