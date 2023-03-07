@@ -34,7 +34,6 @@
     "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.0.3",
-    "mongodb": "^5.1.0",
     "mongoose": "^6.10.0",
     "mongoose-autopopulate": "^0.17.1",
     "passport": "^0.6.0",

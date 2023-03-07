@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { GroupModule } from '@/modules/group/group.module';
+
 import { MongooseConfigService } from './configs/mongo.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
@@ -16,6 +18,7 @@ import { UsersModule } from './modules/users/users.module';
       useClass: MongooseConfigService,
     }),
     AuthModule,
+    GroupModule,
     UsersModule,
   ],
 })

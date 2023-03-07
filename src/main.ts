@@ -1,11 +1,15 @@
 import { ValidationPipe } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { SwaggerDocumentOptions } from '@nestjs/swagger/dist';
 import * as cookieParser from 'cookie-parser';
 
+import { AllExceptionsFilter } from '@/common/exception/allExceptionsFilter.filter';
+import { ResponseInterceptor } from '@/common/interceptor/response.interceptor';
+
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/exception/httpException.filter';
+import { MongooseExceptionFilter } from './common/exception/mongoException.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -30,11 +34,18 @@ async function bootstrap() {
   const options: SwaggerDocumentOptions = {
     operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
   };
+
   const document = SwaggerModule.createDocument(app, config, options);
   SwaggerModule.setup('api', app, document);
 
-  app.useGlobalFilters(new HttpExceptionFilter());
+  const { httpAdapter } = app.get(HttpAdapterHost);
+  app.useGlobalFilters(
+    new MongooseExceptionFilter(),
+    new HttpExceptionFilter(),
+    new AllExceptionsFilter(httpAdapter),
+  );
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.useGlobalInterceptors(new ResponseInterceptor(app.get(Reflector)));
   app.use(cookieParser());
 
   await app.listen(3000);
