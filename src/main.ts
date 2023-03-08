@@ -40,9 +40,9 @@ async function bootstrap() {
 
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(
-    new MongooseExceptionFilter(),
-    new HttpExceptionFilter(),
     new AllExceptionsFilter(httpAdapter),
+    new HttpExceptionFilter(),
+    new MongooseExceptionFilter(),
   );
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useGlobalInterceptors(new ResponseInterceptor(app.get(Reflector)));

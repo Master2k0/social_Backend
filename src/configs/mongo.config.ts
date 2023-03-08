@@ -16,6 +16,7 @@ export class MongooseConfigService implements MongooseOptionsFactory {
       pass: `${process.env.MONGODB_PASSWORD}`,
       connectionFactory: (connection) => {
         connection.plugin(require('mongoose-autopopulate'));
+        connection.plugin(require('mongoose-slug-generator'));
         return connection;
       },
     };

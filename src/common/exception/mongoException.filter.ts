@@ -7,11 +7,8 @@ export class MongooseExceptionFilter implements ExceptionFilter {
   catch(exception: MongoServerError, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    // const message = exception.message;
     const statusCode = exception.code;
-    // console.log(response);
-    // console.log(message);
-    console.log(exception);
+
     switch (statusCode) {
       case 11000:
         response.status(409).json({
