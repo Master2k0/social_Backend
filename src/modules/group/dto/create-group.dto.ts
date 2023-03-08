@@ -1,7 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 
-export class CreateGroupDto {
+import { IGroup } from '@/modules/group/interfaces/group.interfaces';
+
+export class CreateGroupDto implements Partial<IGroup> {
   @ApiProperty({
     type: String,
   })

@@ -2,8 +2,10 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 import { Document } from 'mongoose';
 
+import { IGroup } from '@/modules/group/interfaces/group.interfaces';
 import { User } from '@/modules/users/schema/users.schema';
 import { ERoleGroup } from '@/types/enums/ERoleGroup';
+import { PropertyCustom } from '@/types/propertyCustomDocument';
 
 export type GroupDocument = Group & Document;
 
@@ -11,24 +13,31 @@ export class GroupMember {
   @Prop({ type: String, enum: ERoleGroup, required: true })
   role: ERoleGroup;
   @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' })
-  user: User;
+  user: PropertyCustom<User>;
 }
 
 @Schema({
   timestamps: true,
   versionKey: false,
 })
-export class Group {
+export class Group implements IGroup {
   _id: string;
 
-  createBy: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' })
+  createBy: PropertyCustom<User>;
 
-  updateBy?: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  updateBy?: PropertyCustom<User>;
 
   @Prop({ type: String, required: true })
   name: string;
 
-  @Prop({ type: String, required: true })
+  @Prop({
+    type: String,
+    // required: true,
+    unique: true,
+    slug: 'name',
+  })
   slug: string;
 
   @Prop({ type: String })
@@ -43,12 +52,8 @@ export class Group {
   @Prop({ type: String })
   avatar?: string;
 
-  @Prop([GroupMember])
+  @Prop({ type: [Object] })
   members: GroupMember[];
-  // | {
-  //     role: ERoleGroup;
-  //     user: mongoose.Schema.Types.ObjectId;
-  //   };
 
   toDto: (dto: any) => any;
 }

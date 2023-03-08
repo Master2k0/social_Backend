@@ -1,23 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
-export class UpdateUserDto {
+import { IUser } from '@/modules/users/interfaces/user.interfaces';
+
+export class UpdateUserDto implements Partial<IUser> {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  @IsNotEmpty()
+  // @IsNotEmpty()
   firstName?: string;
 
   @ApiProperty()
   @IsOptional()
   @IsString()
-  @IsNotEmpty()
+  // @IsNotEmpty()
   lastName?: string;
 
   @ApiProperty()
   @IsOptional()
   @IsString()
-  @IsNotEmpty()
+  // @IsNotEmpty()
   phone?: string;
 
   @IsOptional()

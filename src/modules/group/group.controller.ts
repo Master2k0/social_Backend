@@ -1,16 +1,16 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
+  HttpCode,
   Param,
-  Patch,
   Post,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+import { ResponseMessage } from '@/common/decorator/response.decorator';
 import { AccessTokenGuard } from '@/modules/auth/guards/accessToken.guard';
 import { ITokenRequest } from '@/types/tokenRequest';
 
@@ -26,8 +26,26 @@ export class GroupController {
   @Post('create')
   @UseGuards(AccessTokenGuard)
   @ApiBearerAuth('JWT-auth')
-  create(@Req() req: ITokenRequest, @Body() createGroupDto: CreateGroupDto) {
-    return this.groupService.create(req.user.id, createGroupDto);
+  @HttpCode(201)
+  @ResponseMessage('Create group successfully')
+  async create(
+    @Req() req: ITokenRequest,
+    @Body() createGroupDto: CreateGroupDto,
+  ) {
+    return await this.groupService.create(req.user.id, createGroupDto);
+  }
+
+  @Post('update/:id')
+  @UseGuards(AccessTokenGuard)
+  @ApiBearerAuth('JWT-auth')
+  @HttpCode(201)
+  @ResponseMessage('Update group successfully')
+  async update(
+    @Req() req: ITokenRequest,
+    @Body() update: UpdateGroupDto,
+    @Param('id') id: string,
+  ) {
+    return await this.groupService.update(req.user.id, id, update);
   }
 
   @Get()
@@ -35,22 +53,22 @@ export class GroupController {
     return this.groupService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.groupService.findOne(+id);
+  @Get(':slug')
+  findOne(@Param('slug') slug: string) {
+    return this.groupService.findBySlug(slug);
   }
 
-  @Patch(':id')
-  @UseGuards(AccessTokenGuard)
-  @ApiBearerAuth('JWT-auth')
-  update(@Param('id') id: string, @Body() updateGroupDto: UpdateGroupDto) {
-    return this.groupService.update(+id, updateGroupDto);
-  }
+  // @Patch(':id')
+  // @UseGuards(AccessTokenGuard)
+  // @ApiBearerAuth('JWT-auth')
+  // update(@Param('id') id: string, @Body() updateGroupDto: UpdateGroupDto) {
+  //   return this.groupService.update(+id, updateGroupDto);
+  // }
 
-  @Delete(':id')
-  @UseGuards(AccessTokenGuard)
-  @ApiBearerAuth('JWT-auth')
-  remove(@Param('id') id: string) {
-    return this.groupService.remove(+id);
-  }
+  // @Delete(':id')
+  // @UseGuards(AccessTokenGuard)
+  // @ApiBearerAuth('JWT-auth')
+  // remove(@Param('id') id: string) {
+  //   return this.groupService.remove(+id);
+  // }
 }

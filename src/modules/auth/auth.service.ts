@@ -7,6 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { createHash } from 'crypto';
 
 import { UsersService } from '@/modules/users/users.service';
 import { comparePassword, hashPassword } from '@/utils/hashPassword';
@@ -36,6 +37,7 @@ export class AuthService {
       ...registrationData,
       password: newPassword,
     });
+
     return registerUser;
   }
 
@@ -49,8 +51,13 @@ export class AuthService {
     const user = await this.userService.findById(userId);
     if (!user || !user.refreshToken)
       throw new ForbiddenException('Access denied');
-    if (!this.compareRefreshToken(refreshToken, user.refreshToken))
+    const isMatching = await this.compareRefreshToken(
+      refreshToken,
+      user.refreshToken,
+    );
+    if (!isMatching) {
       throw new ForbiddenException('Access denied');
+    }
 
     const tokens = await this.getTokens(userId);
     await this.updateRefreshToken(userId, tokens.refreshToken);
@@ -108,7 +115,10 @@ export class AuthService {
 
   private async hashToken(token: string) {
     const salt = bcrypt.genSaltSync(10);
-    const hashedToken = await bcrypt.hash(token, salt);
+    // ? https://stackoverflow.com/questions/64470962/why-refresh-endpoint-return-new-tokens-when-i-use-old-refresh-token
+    const hash = createHash('sha256').update(token).digest('hex');
+    // //////////////
+    const hashedToken = await bcrypt.hash(hash, salt);
     return hashedToken;
   }
 
@@ -116,6 +126,7 @@ export class AuthService {
     refreshToken,
     refreshTokenStore,
   ): Promise<boolean> => {
-    return await bcrypt.compare(refreshToken, refreshTokenStore);
+    const hash = createHash('sha256').update(refreshToken).digest('hex');
+    return await bcrypt.compare(hash, refreshTokenStore);
   };
 }

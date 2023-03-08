@@ -41,22 +41,9 @@ export class AuthController {
   @Post('register')
   @HttpCode(201)
   @ResponseMessage('Create user successfully')
-  async register(@Res() response, @Body() body: RegisterAuthDto) {
-    // try {
+  async register(@Body() body: RegisterAuthDto) {
     const newUser = await this.userService.create(body);
-    return plainToInstance(ResponseAuth, newUser.toObject());
-    // } catch (err) {
-    //   let message = 'Bad request';
-    //   if (err?.code === 11000) {
-    //     message = 'User already exists';
-    //   } else {
-    //     message = err?._message;
-    //   }
-    //   throw new BadRequestException('Something bad happened', {
-    //     cause: new Error(),
-    //     description: message,
-    //   });
-    // }
+    return await plainToInstance(ResponseAuth, newUser.toObject());
   }
 
   @Get('logout')

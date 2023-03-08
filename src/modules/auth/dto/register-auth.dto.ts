@@ -1,7 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
 
-export class RegisterAuthDto {
+import { IUser } from '@/modules/users/interfaces/user.interfaces';
+
+export class RegisterAuthDto implements Partial<IUser> {
   @ApiProperty({
     type: String,
   })
