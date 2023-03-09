@@ -81,7 +81,7 @@ export class UsersService {
   }
 
   async findById(id: string) {
-    const user = await this.model.findOne({ id });
+    const user = await this.model.findById(id);
     if (!user) {
       throw new HttpException(
         {

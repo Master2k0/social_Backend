@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  HttpException,
   Param,
   Post,
   Req,
@@ -10,12 +11,16 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+import { AllowAccessWithoutToken } from '@/common/decorator/getTokenWithoutGuards.decorator';
 import { ResponseMessage } from '@/common/decorator/response.decorator';
 import { AccessTokenGuard } from '@/modules/auth/guards/accessToken.guard';
+import { AddMemberRequestToGroupDto } from '@/modules/group/dto/add-member-group.dto';
 import { ITokenRequest } from '@/types/tokenRequest';
 
 import { CreateGroupDto } from './dto/create-group.dto';
+import { ResponseGroup } from './dto/response-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
+import { UpdateMemberGroupDto } from './dto/updateMember-group.dto';
 import { GroupService } from './group.service';
 
 @ApiTags('group')
@@ -32,6 +37,7 @@ export class GroupController {
     @Req() req: ITokenRequest,
     @Body() createGroupDto: CreateGroupDto,
   ) {
+    // console.log(req.user);
     return await this.groupService.create(req.user.id, createGroupDto);
   }
 
@@ -48,14 +54,75 @@ export class GroupController {
     return await this.groupService.update(req.user.id, id, update);
   }
 
-  @Get()
-  findAll() {
-    return this.groupService.findAll();
+  @Post('update/members/:id')
+  @UseGuards(AccessTokenGuard)
+  @ApiBearerAuth('JWT-auth')
+  @HttpCode(201)
+  @ResponseMessage('Update members group successfully')
+  async updateMembers(
+    @Req() req: ITokenRequest,
+    @Body() update: UpdateMemberGroupDto,
+    @Param('id') id: string,
+  ) {
+    const isAdmin = await this.groupService.isAdmin(req.user.id, id);
+    if (!isAdmin) throw new HttpException('Not permission', 403);
+    return await this.groupService.updateMembers(req.user.id, id, update);
+  }
+
+  // @Get()
+  // findAll() {
+  //   return this.groupService.findAll();
+  // }
+
+  @Post('update/addMemberRequest/:id')
+  @UseGuards(AccessTokenGuard)
+  @ApiBearerAuth('JWT-auth')
+  @HttpCode(201)
+  @ResponseMessage('Add user to list user request successfully')
+  async addUserRequest(
+    @Req() req: ITokenRequest,
+    @Param('id') id: string,
+    @Body() body: AddMemberRequestToGroupDto,
+  ) {
+    await this.groupService.addOneMemberToMemberRequest(
+      req.user.id,
+      body.idUser,
+      id,
+    );
+  }
+
+  @Post('update/addMemberRequestToMember/:id')
+  @UseGuards(AccessTokenGuard)
+  @ApiBearerAuth('JWT-auth')
+  @HttpCode(201)
+  @ResponseMessage('Add user to list user request successfully')
+  async addUserRequestToMember(
+    @Req() req: ITokenRequest,
+    @Param('id') id: string,
+    @Body() body: UpdateMemberGroupDto,
+  ) {
+    return await this.groupService.addMemberRequestToMembers(
+      req.user.id,
+      id,
+      body.members,
+    );
   }
 
   @Get(':slug')
-  findOne(@Param('slug') slug: string) {
-    return this.groupService.findBySlug(slug);
+  @UseGuards(AccessTokenGuard)
+  @AllowAccessWithoutToken()
+  @ApiBearerAuth('JWT-auth')
+  @HttpCode(201)
+  @ResponseMessage('Update members group successfully')
+  async findOne(@Req() req: ITokenRequest, @Param('slug') slug: string) {
+    const group = await this.groupService.findBySlug(slug);
+    const idUserRequest = req?.user?.id || '';
+    const isAdmin = await this.groupService.isAdmin(idUserRequest, group._id);
+    if (isAdmin) {
+      return group;
+    } else {
+      return group.toDto(ResponseGroup);
+    }
   }
 
   // @Patch(':id')

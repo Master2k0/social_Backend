@@ -5,7 +5,6 @@ import {
   HttpCode,
   Post,
   Req,
-  Res,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';

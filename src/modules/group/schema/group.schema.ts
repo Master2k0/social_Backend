@@ -16,6 +16,14 @@ export class GroupMember {
   user: PropertyCustom<User>;
 }
 
+export class GroupMemberRequest {
+  @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' })
+  user: PropertyCustom<User>;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' })
+  userAddRequest: PropertyCustom<User>;
+}
+
 @Schema({
   timestamps: true,
   versionKey: false,
@@ -54,6 +62,9 @@ export class Group implements IGroup {
 
   @Prop({ type: [Object] })
   members: GroupMember[];
+
+  @Prop({ type: [Object], ref: 'User' })
+  membersRequest: GroupMemberRequest[];
 
   toDto: (dto: any) => any;
 }
