@@ -65,6 +65,29 @@ export class GroupService {
     return group;
   }
 
+  async getAll(): Promise<GroupDocument[]> {
+    return await this.model
+      .find({ isDeleted: false })
+      .populate({
+        path: 'members',
+        populate: {
+          path: 'user',
+          model: 'User',
+          select: 'name firstName lastName',
+        },
+      })
+      .populate({
+        path: 'createBy',
+        model: 'User',
+        select: 'name firstName lastName',
+      })
+      .populate({
+        path: 'updateBy',
+        model: 'User',
+        select: 'name firstName lastName',
+      });
+  }
+
   async findBySlug(slug: string): Promise<GroupDocument> {
     const group = await this.model
       .findOne({ slug, isDeleted: false })

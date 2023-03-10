@@ -106,6 +106,14 @@ export class GroupController {
     );
   }
 
+  @Get('')
+  @HttpCode(201)
+  @ResponseMessage('Get all group successfully')
+  async getAll() {
+    const listGroup = await this.groupService.getAll();
+    return listGroup.map((group) => group.toDto(ResponseGroup));
+  }
+
   @Get(':slug')
   @UseGuards(AccessTokenGuard)
   @AllowAccessWithoutToken()
@@ -123,7 +131,7 @@ export class GroupController {
     }
   }
 
-  @Delete('/delete/memberRequest/:id')
+  @Delete('delete/memberRequest/:id')
   @UseGuards(AccessTokenGuard)
   @ApiBearerAuth('JWT-auth')
   @HttpCode(201)
@@ -140,7 +148,7 @@ export class GroupController {
     );
   }
 
-  @Delete('/delete/:id')
+  @Delete('delete/:id')
   @UseGuards(AccessTokenGuard)
   @ApiBearerAuth('JWT-auth')
   @HttpCode(201)
