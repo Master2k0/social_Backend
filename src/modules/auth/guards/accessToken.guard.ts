@@ -9,7 +9,7 @@ export class AccessTokenGuard extends AuthGuard('jwt') {
   }
 
   handleRequest(err, user, info, context) {
-    const request = context.switchToHttp().getRequest();
+    // const request = context.switchToHttp().getRequest();
 
     const allowAny = this.reflector.get<string[]>(
       'allow-any',

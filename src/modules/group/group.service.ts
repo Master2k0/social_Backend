@@ -292,4 +292,8 @@ export class GroupService {
       }),
     );
   }
+
+  async test() {
+    console.log('test');
+  }
 }
