@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpException,
   Param,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -15,6 +17,7 @@ import { AllowAccessWithoutToken } from '@/common/decorator/getTokenWithoutGuard
 import { ResponseMessage } from '@/common/decorator/response.decorator';
 import { AccessTokenGuard } from '@/modules/auth/guards/accessToken.guard';
 import { AddMemberRequestToGroupDto } from '@/modules/group/dto/add-member-group.dto';
+import { RemoveMemberFromGroupDto } from '@/modules/group/dto/remove-member-from-memberRequest.dto';
 import { ITokenRequest } from '@/types/tokenRequest';
 
 import { CreateGroupDto } from './dto/create-group.dto';
@@ -41,7 +44,7 @@ export class GroupController {
     return await this.groupService.create(req.user.id, createGroupDto);
   }
 
-  @Post('update/:id')
+  @Patch('update/:id')
   @UseGuards(AccessTokenGuard)
   @ApiBearerAuth('JWT-auth')
   @HttpCode(201)
@@ -54,7 +57,7 @@ export class GroupController {
     return await this.groupService.update(req.user.id, id, update);
   }
 
-  @Post('update/members/:id')
+  @Patch('update/members/:id')
   @UseGuards(AccessTokenGuard)
   @ApiBearerAuth('JWT-auth')
   @HttpCode(201)
@@ -69,12 +72,7 @@ export class GroupController {
     return await this.groupService.updateMembers(req.user.id, id, update);
   }
 
-  // @Get()
-  // findAll() {
-  //   return this.groupService.findAll();
-  // }
-
-  @Post('update/addMemberRequest/:id')
+  @Patch('update/addMemberRequest/:id')
   @UseGuards(AccessTokenGuard)
   @ApiBearerAuth('JWT-auth')
   @HttpCode(201)
@@ -91,7 +89,7 @@ export class GroupController {
     );
   }
 
-  @Post('update/addMemberRequestToMember/:id')
+  @Patch('update/addMemberRequestToMember/:id')
   @UseGuards(AccessTokenGuard)
   @ApiBearerAuth('JWT-auth')
   @HttpCode(201)
@@ -117,7 +115,7 @@ export class GroupController {
   async findOne(@Req() req: ITokenRequest, @Param('slug') slug: string) {
     const group = await this.groupService.findBySlug(slug);
     const idUserRequest = req?.user?.id || '';
-    const isAdmin = await this.groupService.isAdmin(idUserRequest, group._id);
+    const isAdmin = await this.groupService.isAdmin(idUserRequest, group?._id);
     if (isAdmin) {
       return group;
     } else {
@@ -125,17 +123,29 @@ export class GroupController {
     }
   }
 
-  // @Patch(':id')
-  // @UseGuards(AccessTokenGuard)
-  // @ApiBearerAuth('JWT-auth')
-  // update(@Param('id') id: string, @Body() updateGroupDto: UpdateGroupDto) {
-  //   return this.groupService.update(+id, updateGroupDto);
-  // }
+  @Delete('/delete/memberRequest/:id')
+  @UseGuards(AccessTokenGuard)
+  @ApiBearerAuth('JWT-auth')
+  @HttpCode(201)
+  @ResponseMessage('Delete user request successfully')
+  async deleteUserRequest(
+    @Req() req: ITokenRequest,
+    @Param('id') id: string,
+    @Body() body: RemoveMemberFromGroupDto,
+  ) {
+    return await this.groupService.deleteMemberRequest(
+      req.user.id,
+      id,
+      body.listIdUser,
+    );
+  }
 
-  // @Delete(':id')
-  // @UseGuards(AccessTokenGuard)
-  // @ApiBearerAuth('JWT-auth')
-  // remove(@Param('id') id: string) {
-  //   return this.groupService.remove(+id);
-  // }
+  @Delete('/delete/:id')
+  @UseGuards(AccessTokenGuard)
+  @ApiBearerAuth('JWT-auth')
+  @HttpCode(201)
+  @ResponseMessage('Delete group successfully')
+  async deleteGroup(@Req() req: ITokenRequest, @Param('id') id: string) {
+    return await this.groupService.deleteGroup(req.user.id, id);
+  }
 }

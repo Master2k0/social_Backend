@@ -65,6 +65,35 @@ export class GroupService {
     return group;
   }
 
+  async findBySlug(slug: string): Promise<GroupDocument> {
+    const group = await this.model
+      .findOne({ slug, isDeleted: false })
+      .populate({
+        path: 'members',
+        populate: {
+          path: 'user',
+          model: 'User',
+          select: 'name firstName lastName',
+        },
+      })
+      .populate({
+        path: 'createBy',
+        model: 'User',
+        select: 'name firstName lastName',
+      })
+      .populate({
+        path: 'updateBy',
+        model: 'User',
+        select: 'name firstName lastName',
+      });
+    if (!group) {
+      throw new HttpException('Group not found', 404);
+    }
+    return group;
+  }
+
+  async;
+
   async update(
     idAdmin: string,
     idGroup: string,
@@ -200,33 +229,26 @@ export class GroupService {
     return group;
   }
 
-  // findAll() {
-  //   return `This action returns all group`;
-  // }
-
-  async findBySlug(slug: string): Promise<GroupDocument> {
-    const group = await this.model
-      .findOne({ slug })
-      .populate({
-        path: 'members',
-        populate: {
-          path: 'user',
-          model: 'User',
-          select: 'name firstName lastName',
+  async deleteMemberRequest(
+    idAdmin: string,
+    idGroup: string,
+    listIdUser: string[],
+  ) {
+    await this.checkPermission(idAdmin, idGroup);
+    await this.model.findByIdAndUpdate(idGroup, {
+      $pull: {
+        membersRequest: {
+          user: { $in: listIdUser.map((id) => new ObjectId(id)) },
         },
-      })
-      .populate({
-        path: 'createBy',
-        model: 'User',
-        select: 'name firstName lastName',
-      })
-      .populate({
-        path: 'updateBy',
-        model: 'User',
-        select: 'name firstName lastName',
-      });
-
-    return group;
+      },
+    });
+  }
+  ///
+  async deleteGroup(idAdmin: string, idGroup: string) {
+    await this.checkPermission(idAdmin, idGroup);
+    await this.model.findByIdAndUpdate(idGroup, {
+      isDeleted: true,
+    });
   }
 
   async checkPermission(idUser: string, idGroup: string) {

@@ -11,7 +11,6 @@ export type UserDocument = User & Document;
   versionKey: false,
 })
 export class User implements IUser {
-  name: string;
   isDeleted?: boolean;
   createdAt: Date;
   updatedAt?: Date;

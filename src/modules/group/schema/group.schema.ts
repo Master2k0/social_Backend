@@ -29,7 +29,7 @@ export class GroupMemberRequest {
   versionKey: false,
 })
 export class Group implements IGroup {
-  _id: string;
+  // _id: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' })
   createBy: PropertyCustom<User>;
@@ -65,6 +65,9 @@ export class Group implements IGroup {
 
   @Prop({ type: [Object], ref: 'User' })
   membersRequest: GroupMemberRequest[];
+
+  @Prop({ type: Boolean, default: false })
+  isDeleted?: boolean;
 
   toDto: (dto: any) => any;
 }
