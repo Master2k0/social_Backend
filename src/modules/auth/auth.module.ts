@@ -7,11 +7,18 @@ import { AccessTokenStrategy } from '@/modules/auth/strategies/accessToken.strat
 import { RefreshTokenStrategy } from '@/modules/auth/strategies/refreshToken.strategy';
 import { UsersModule } from '@/modules/users/users.module';
 
+import { EmailConfirmationModule } from '../email-confirmation/email-confirmation.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 
 @Module({
-  imports: [UsersModule, PassportModule, ConfigModule, JwtModule.register({})],
+  imports: [
+    UsersModule,
+    PassportModule,
+    ConfigModule,
+    JwtModule.register({}),
+    EmailConfirmationModule,
+  ],
   controllers: [AuthController],
   providers: [AuthService, AccessTokenStrategy, RefreshTokenStrategy],
   exports: [AuthService],

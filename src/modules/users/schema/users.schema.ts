@@ -37,6 +37,9 @@ export class User implements IUser {
   @Exclude()
   refreshToken?: string;
 
+  @Prop({ type: Boolean, default: false })
+  isEmailVerified?: boolean;
+
   toDto: (dto: any) => any;
 }
 

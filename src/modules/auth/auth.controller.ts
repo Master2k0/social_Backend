@@ -17,6 +17,7 @@ import { AccessTokenGuard } from '@/modules/auth/guards/accessToken.guard';
 import { UsersService } from '@/modules/users/users.service';
 import { ITokenRequest } from '@/types/tokenRequest';
 
+import { EmailConfirmationService } from '../email-confirmation/email-confirmation.service';
 import { AuthService } from './auth.service';
 import { RegisterAuthDto } from './dto/register-auth.dto';
 import { ResponseAuth } from './dto/response-auth.dto';
@@ -28,6 +29,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UsersService,
+    private readonly emailConfirmationService: EmailConfirmationService,
   ) {}
 
   @Post('login')
@@ -42,6 +44,7 @@ export class AuthController {
   @ResponseMessage('Create user successfully')
   async register(@Body() body: RegisterAuthDto) {
     const newUser = await this.userService.create(body);
+    await this.emailConfirmationService.sendVerificationLink(body.email);
     return await plainToInstance(ResponseAuth, newUser.toObject());
   }
 
