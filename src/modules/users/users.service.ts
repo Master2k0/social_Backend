@@ -83,14 +83,24 @@ export class UsersService {
   async findById(id: string) {
     const user = await this.model.findById(id);
     if (!user) {
-      throw new HttpException(
-        {
-          status: HttpStatus.NOT_FOUND,
-          error: 'User not found',
-        },
-        HttpStatus.NOT_FOUND,
-      );
+      this.notFound('User not found');
     }
     return user;
+  }
+
+  async findByEmail(email: string): Promise<User> {
+    const user = await this.model.findOne({ email: email }).exec();
+    if (!user) this.notFound('User not found');
+    return user;
+  }
+
+  private async notFound(error: string) {
+    throw new HttpException(
+      {
+        status: HttpStatus.NOT_FOUND,
+        error,
+      },
+      HttpStatus.NOT_FOUND,
+    );
   }
 }

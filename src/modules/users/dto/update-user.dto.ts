@@ -25,4 +25,9 @@ export class UpdateUserDto implements Partial<IUser> {
   @IsOptional()
   @IsString()
   refreshToken?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  isVerified?: boolean;
 }
