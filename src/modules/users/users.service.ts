@@ -2,6 +2,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  NotFoundException,
   UseFilters,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -29,6 +30,15 @@ export class UsersService {
     return user;
   }
 
+  async createUserWithoutPassword(
+    createUserDto: Omit<CreateUserDto, 'password'>,
+  ): Promise<UserDocument> {
+    const user = await this.model.create({
+      ...createUserDto,
+    });
+    return user;
+  }
+
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.model.findById(id).exec();
     if (!user) {
@@ -44,6 +54,18 @@ export class UsersService {
       .findByIdAndUpdate(id, updateUserDto, { new: true })
       .exec();
 
+    return res;
+  }
+
+  async updatePassword(id: string, password: string): Promise<User> {
+    const user = await this.model.findById(id).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const newPassword = await hashPassword(password);
+    const res = await this.model
+      .findByIdAndUpdate(id, { password: newPassword }, { new: true })
+      .exec();
     return res;
   }
 
@@ -90,7 +112,7 @@ export class UsersService {
 
   async findByEmail(email: string): Promise<User> {
     const user = await this.model.findOne({ email: email }).exec();
-    if (!user) this.notFound('User not found');
+    if (!user) throw new NotFoundException('User not found');
     return user;
   }
 

@@ -26,7 +26,7 @@ export class User implements IUser {
   @Prop({ type: String, required: true, unique: true })
   userName: string;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String })
   @Exclude()
   password: string;
 

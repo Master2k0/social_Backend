@@ -9,6 +9,7 @@ import { ResponseInterceptor } from '@/common/interceptor/response.interceptor';
 
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/exception/httpException.filter';
+import { JwtExceptionFilter } from './common/exception/jwtException.filter';
 import { MongooseExceptionFilter } from './common/exception/mongoException.filter';
 
 async function bootstrap() {
@@ -41,6 +42,7 @@ async function bootstrap() {
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(
     new AllExceptionsFilter(httpAdapter),
+    new JwtExceptionFilter(httpAdapter),
     new HttpExceptionFilter(),
     new MongooseExceptionFilter(),
   );

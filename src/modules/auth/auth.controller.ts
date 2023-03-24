@@ -13,6 +13,7 @@ import { plainToInstance } from 'class-transformer';
 import { ResponseMessage } from '@/common/decorator/response.decorator';
 import { LOGIN_SUCCESS } from '@/constants/messageResponse.constants';
 import { LoginAuthDto } from '@/modules/auth/dto/login-auth.dto';
+import { ResetPasswordDto } from '@/modules/auth/dto/reset-password-auth.dto';
 import { AccessTokenGuard } from '@/modules/auth/guards/accessToken.guard';
 import { ITokenRequest } from '@/types/tokenRequest';
 import convertToObject from '@/utils/convertToObject';
@@ -32,6 +33,13 @@ export class AuthController {
   @ResponseMessage(LOGIN_SUCCESS)
   async login(@Req() req, @Body() body: LoginAuthDto) {
     return await this.authService.login(body.userName, body.password);
+  }
+
+  @Post('github')
+  @HttpCode(201)
+  @ResponseMessage(LOGIN_SUCCESS)
+  async githubLogin(@Req() req, @Body() body: { code: string }) {
+    return await this.authService.getInfoUserGithub(body.code);
   }
 
   @Post('register')
@@ -71,8 +79,16 @@ export class AuthController {
 
   @Post('forgot-password')
   @HttpCode(201)
-  @ResponseMessage('Send email successfully')
-  async forgotPassword(@Body() body: { mail: string }) {
-    await this.authService.requestResetPassword(body.mail);
+  @ResponseMessage('Request successfully')
+  async forgotPassword(@Body() body: { email: string }) {
+    await this.authService.requestResetPassword(body.email);
+  }
+
+  @Post('reset-password')
+  @HttpCode(201)
+  @ResponseMessage('Reset password successfully')
+  async resetPassword(@Body() body: ResetPasswordDto) {
+    const user = await this.authService.resetPassword(body);
+    return await plainToInstance(ResponseAuth, convertToObject(user));
   }
 }
