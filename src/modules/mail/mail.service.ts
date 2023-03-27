@@ -22,7 +22,6 @@ export class MailService {
 
   async sendResetPassword(user: User, token: string) {
     const url = `${process.env.EMAIL_RESET_PASSWORD}=${token} `;
-    console.log(url);
     await this.mailerService.sendMail({
       to: user.email,
       subject: 'Reset your password',
