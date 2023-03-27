@@ -9,6 +9,7 @@ import { RefreshTokenStrategy } from '@/modules/auth/strategies/refreshToken.str
 import { MailModule } from '@/modules/mail/mail.module';
 import { UsersModule } from '@/modules/users/users.module';
 
+// import { EmailConfirmationModule } from '../email-confirmation/email-confirmation.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 
@@ -20,6 +21,7 @@ import { AuthService } from './auth.service';
     JwtModule.register({}),
     MailModule,
     HttpModule,
+    // EmailConfirmationModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, AccessTokenStrategy, RefreshTokenStrategy],

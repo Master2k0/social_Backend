@@ -15,9 +15,11 @@ import { LOGIN_SUCCESS } from '@/constants/messageResponse.constants';
 import { LoginAuthDto } from '@/modules/auth/dto/login-auth.dto';
 import { ResetPasswordDto } from '@/modules/auth/dto/reset-password-auth.dto';
 import { AccessTokenGuard } from '@/modules/auth/guards/accessToken.guard';
+import { UsersService } from '@/modules/users/users.service';
 import { ITokenRequest } from '@/types/tokenRequest';
 import convertToObject from '@/utils/convertToObject';
 
+// import { EmailConfirmationService } from '../email-confirmation/email-confirmation.service';
 import { AuthService } from './auth.service';
 import { RegisterAuthDto } from './dto/register-auth.dto';
 import { ResponseAuth } from './dto/response-auth.dto';
@@ -26,7 +28,11 @@ import { RefreshTokenGuard } from './guards/refreshToken.guard';
 @ApiTags('authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UsersService,
+    private readonly emailConfirmationService: EmailConfirmationService,
+  ) {}
 
   @Post('login')
   @HttpCode(201)
@@ -46,8 +52,9 @@ export class AuthController {
   @HttpCode(201)
   @ResponseMessage('Create user successfully')
   async register(@Body() body: RegisterAuthDto) {
-    const newUser = await this.authService.register(body);
-    return await plainToInstance(ResponseAuth, convertToObject(newUser));
+    const newUser = await this.userService.create(body);
+    await this.emailConfirmationService.sendVerificationLink(body.email);
+    return await plainToInstance(ResponseAuth, newUser.toObject());
   }
 
   @Get('logout')
