@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { createHash } from 'crypto';
+import { OAuth2Client } from 'google-auth-library';
 import { firstValueFrom } from 'rxjs';
 
 import { ResetPasswordDto } from '@/modules/auth/dto/reset-password-auth.dto';
@@ -139,7 +140,7 @@ export class AuthService {
     return userHasNewPassword;
   }
 
-  async getInfoUserGithub(code: string) {
+  async loginWithGithub(code: string) {
     const { data } = await firstValueFrom(
       this.httpService.post(
         `https://github.com/login/oauth/access_token?client_id=${process.env.GITHUB_CLIENT_ID}&client_secret=${process.env.GITHUB_CLIENT_SECRECT_KEY}&code=${code}`,
@@ -163,6 +164,7 @@ export class AuthService {
         lastName: userData.name,
         email: userData.email,
         userName: userData.login,
+        isVerified: true,
       };
       user = await this.userService.createUserWithoutPassword(payload);
     }
@@ -179,6 +181,79 @@ export class AuthService {
       }),
     );
     return data;
+  }
+
+  async loginWithGoogle(code: string) {
+    const oAuth2Client = new OAuth2Client(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      'postmessage',
+    );
+    const { tokens } = await oAuth2Client.getToken(code);
+    const { data: userData } = await firstValueFrom(
+      this.httpService.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${tokens.access_token}` },
+      }),
+    );
+    if (!userData) throw new BadRequestException('Invalid google code');
+    let user: User;
+    try {
+      user = await this.userService.findByEmail(userData.email);
+    } catch (err) {
+      const payload: Omit<CreateUserDto, 'password'> = {
+        firstName: userData.given_name,
+        lastName: userData.family_name,
+        email: userData.email,
+        userName: userData.email,
+        isVerified: true,
+      };
+      user = await this.userService.createUserWithoutPassword(payload);
+    }
+    const token = await this.getTokens(user._id);
+    return token;
+  }
+
+  async loginWithDiscord(code: string) {
+    const { data } = await this.httpService.axiosRef.post(
+      'https://discord.com/api/oauth2/token',
+      new URLSearchParams({
+        client_id: process.env.DISCORD_CLIENT_ID,
+        client_secret: process.env.DISCORD_SECRET_ID,
+        code,
+        grant_type: 'authorization_code',
+        scope: 'identify email',
+        redirect_uri: 'http://localhost:2402/auth/discord',
+      }).toString(),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      },
+    );
+    const { access_token } = data;
+    const { data: userDataReturn } = await this.httpService.axiosRef.get(
+      'https://discord.com/api/users/@me',
+      {
+        headers: {
+          authorization: `Bearer ${access_token}`,
+        },
+      },
+    );
+    let user: User;
+    try {
+      user = await this.userService.findByEmail(userDataReturn.email);
+    } catch (err) {
+      const payload: Omit<CreateUserDto, 'password'> = {
+        firstName: userDataReturn.global_name || 'unknown',
+        lastName: userDataReturn.username || 'unknown',
+        email: userDataReturn.email,
+        userName: userDataReturn.username,
+        isVerified: true,
+      };
+      user = await this.userService.createUserWithoutPassword(payload);
+    }
+    const token = await this.getTokens(user._id);
+    return token;
   }
 
   private async verifyPassword(

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 import { IUser } from '@/modules/users/interfaces/user.interfaces';
 
@@ -34,4 +34,8 @@ export class RegisterAuthDto implements Partial<IUser> {
   })
   @IsString()
   lastName: string;
+
+  @IsBoolean()
+  @IsOptional()
+  isVerified?: boolean;
 }

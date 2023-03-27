@@ -40,7 +40,21 @@ export class AuthController {
   @HttpCode(201)
   @ResponseMessage(LOGIN_SUCCESS)
   async githubLogin(@Req() req, @Body() body: { code: string }) {
-    return await this.authService.getInfoUserGithub(body.code);
+    return await this.authService.loginWithGithub(body.code);
+  }
+
+  @Post('google')
+  @HttpCode(201)
+  @ResponseMessage(LOGIN_SUCCESS)
+  async googleLogin(@Req() req, @Body() body: { code: string }) {
+    return await this.authService.loginWithGoogle(body.code);
+  }
+
+  @Post('discord')
+  @HttpCode(201)
+  @ResponseMessage(LOGIN_SUCCESS)
+  async discordLogin(@Body() body: { code: string }) {
+    return await this.authService.loginWithDiscord(body.code);
   }
 
   @Post('register')
